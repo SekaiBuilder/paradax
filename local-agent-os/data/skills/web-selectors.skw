@@ -1,0 +1,1 @@
+{"i":"web-selectors","n":"Selectores reales","k":"c","d":"Extrae ids/clases/data-attrs reales de una pagina y planifica solo con ellos.","t":["web","selectores","playwright"],"o":["http_get"],"p":"Usa SOLO selectores presentes en el inventario real."}

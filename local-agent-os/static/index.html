@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paradax</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Barra lateral ─────────────────────────────────────────── -->
+  <nav class="sidebar" aria-label="Áreas">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 28" fill="none" aria-hidden="true">
+        <path d="M16 1.5L30 9.5v9L16 26.5 2 18.5v-9z" stroke="currentColor" stroke-width="2"/>
+        <circle cx="16" cy="14" r="4" fill="currentColor"/>
+      </svg>
+      <span>Paradax</span>
+    </div>
+
+    <div class="nav-group">
+      <button class="nav-item" data-section="projects" style="--area: var(--c-proj)"><i data-icon="projects"></i><span>Proyectos</span></button>
+      <button class="nav-item" data-section="factory" style="--area: var(--c-fab)"><i data-icon="constructor"></i><span>Constructor</span><em class="count" id="ghostCount"></em></button>
+      <button class="nav-item" data-section="training" style="--area: var(--c-train)"><i data-icon="training"></i><span>Entrenamiento</span></button>
+      <button class="nav-item" data-section="lab" style="--area: var(--c-lab)"><i data-icon="lab"></i><span>Laboratorio</span><em class="count danger" id="labCount"></em></button>
+    </div>
+    <div class="nav-group">
+      <button class="nav-item" data-section="automation" style="--area: var(--c-auto)"><i data-icon="automation"></i><span>Automatización</span></button>
+      <button class="nav-item" data-section="activity" style="--area: var(--text-2)"><i data-icon="activity"></i><span>Actividad</span><em class="count" id="actCount"></em></button>
+    </div>
+
+    <div class="lang-switch" id="langSwitch" role="group" aria-label="Idioma">
+      <button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button>
+    </div>
+    <div class="engine" title="Modelo maestro por defecto">
+      <span class="engine-dot" id="engineDot"></span>
+      <span class="engine-text"><span class="muted">Maestro</span><code id="engine">conectando…</code></span>
+      <span class="live" id="liveDot" title="Eventos en vivo"></span>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- ── PROYECTOS ───────────────────────────────────────────── -->
+    <section class="section" id="sec-projects" style="--area: var(--c-proj)">
+      <aside class="column">
+        <header class="column-head">
+          <h1>Proyectos</h1>
+          <button class="btn btn-primary btn-sm" id="newProjectBtn"><i data-icon="plus"></i><span>Nuevo</span></button>
+        </header>
+        <div class="list" id="projList"></div>
+      </aside>
+
+      <div class="workspace">
+        <div class="empty-state big" id="projEmpty">
+          <p>Elige un proyecto o crea uno nuevo.</p>
+          <p class="muted">Cada proyecto tiene su jerarquía, su Project Manager, su equipo y sus ejecuciones.</p>
+        </div>
+
+        <div class="hidden ws-body" id="projBody">
+          <header class="ws-head">
+            <div class="ws-title">
+              <h2 id="projName"></h2>
+              <span id="projStatus"></span>
+              <p class="muted" id="projGoal"></p>
+            </div>
+            <div class="ws-actions">
+              <button class="btn btn-primary" id="runProjectBtn"><i data-icon="play"></i><span>Ejecutar</span></button>
+              <button class="btn btn-ghost proj-only" id="buildTeamBtn"><i data-icon="build"></i><span>Construir equipo</span></button>
+              <button class="btn btn-ghost proj-only toggle" id="projAutoRunBtn"></button>
+              <button class="btn btn-icon proj-only" id="projUndoBtn" title="Deshacer el último run"><i data-icon="undo"></i></button>
+              <button class="btn btn-icon proj-only danger" id="projDeleteBtn" title="Eliminar proyecto"><i data-icon="trash"></i></button>
+            </div>
+          </header>
+
+          <div class="tabs" data-tabs="proj">
+            <button data-tab="org" class="active"><i data-icon="hierarchy"></i>Jerarquía</button>
+            <button data-tab="pm" class="proj-only"><i data-icon="chat"></i>Project Manager</button>
+            <button data-tab="team" class="proj-only"><i data-icon="team"></i>Equipo</button>
+            <button data-tab="runs"><i data-icon="list"></i>Ejecuciones</button>
+            <button data-tab="sched" class="proj-only"><i data-icon="calendar"></i>Programación</button>
+          </div>
+
+          <div class="panel" data-panel="proj:org">
+            <div class="legend">
+              <span><i class="lg lg-mando"></i>encarga</span>
+              <span><i class="lg lg-datos"></i>pasa datos</span>
+              <span><i class="lg lg-student"></i>modelo propio</span>
+              <span><i class="lg lg-hazard"></i>versión en cuarentena</span>
+              <span><i class="lg lg-blocked"></i>bloqueado</span>
+              <span class="muted">Clic en un agente: chat o ficha</span>
+            </div>
+            <div class="org-wrap"><svg id="orgSvg" class="org" role="img" aria-label="Jerarquía del proyecto"></svg></div>
+            <div id="orgInputs" class="stack"></div>
+          </div>
+
+          <div class="panel hidden chat-panel" data-panel="proj:pm">
+            <div class="messages" id="pmMessages"></div>
+            <div class="composer">
+              <textarea id="pmInput" rows="1" placeholder="Escribe al Project Manager…"></textarea>
+              <button class="btn btn-primary" id="pmSend" aria-label="Enviar"><i data-icon="send"></i></button>
+            </div>
+          </div>
+
+          <div class="panel hidden" data-panel="proj:team">
+            <div class="panel-bar">
+              <h3>Agentes del equipo</h3>
+              <button class="btn btn-ghost btn-sm" id="addAgentBtn"><i data-icon="plus"></i><span>Añadir agente existente</span></button>
+            </div>
+            <div class="picker hidden" id="picker">
+              <select id="pickerSel"></select>
+              <button class="btn btn-primary btn-sm" id="pickerAdd">Añadir</button>
+              <button class="btn btn-ghost btn-sm" id="pickerCancel">Cancelar</button>
+            </div>
+            <div class="stack" id="teamList"></div>
+          </div>
+
+          <div class="panel hidden" data-panel="proj:runs">
+            <div class="media-only hidden launcher">
+              <input id="mediaInput" type="text" placeholder="Pide un GIF o un reel, por ejemplo: gif del kanji 水">
+              <label class="check"><input id="mediaReel" type="checkbox"> reel con voz</label>
+              <button class="btn btn-primary" id="mediaLaunch"><i data-icon="play"></i><span>Lanzar</span></button>
+            </div>
+            <div class="media-only hidden"><h3>Runs recientes</h3><div class="stack" id="mediaRuns"></div></div>
+            <div class="proj-only grid-2">
+              <div>
+                <h3>Tareas</h3>
+                <div class="stack" id="taskList"></div>
+                <div class="panel-bar"><h3>Resultados</h3>
+                  <button class="btn btn-ghost btn-sm" id="openResultsBtn"><i data-icon="open"></i><span>Abrir carpeta</span></button></div>
+                <div class="stack" id="resultList"></div>
+              </div>
+              <div>
+                <h3>Bitácora</h3>
+                <ol class="log" id="projLog"></ol>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel hidden" data-panel="proj:sched">
+            <p class="muted">Elige los días del mes y la hora a la que debe estar terminado. Paradax arranca antes, según lo que suele tardar.</p>
+            <div class="days" id="schedDays"></div>
+            <div class="row">
+              <label class="field inline"><span>Terminar antes de</span><input type="time" id="schedTime" value="03:00"></label>
+              <button class="btn btn-primary btn-sm" id="addSchedBtn"><i data-icon="calendar"></i><span>Programar</span></button>
+            </div>
+            <div class="stack" id="schedList"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CONSTRUCTOR ────────────────────────────────────────── -->
+    <section class="section hidden" id="sec-factory" style="--area: var(--c-fab)">
+      <div class="workspace full">
+        <header class="ws-head">
+          <div class="ws-title">
+            <h1>Constructor</h1>
+            <p class="muted">El equipo que diseña, fabrica, valida y entrena a los agentes de todos los proyectos.</p>
+          </div>
+          <div class="ws-actions">
+            <button class="btn btn-primary" id="buildBtn"><i data-icon="build"></i><span>Construir agente</span></button>
+          </div>
+        </header>
+        <div class="tabs" data-tabs="fab">
+          <button data-tab="team" class="active"><i data-icon="hierarchy"></i>Equipo constructor</button>
+          <button data-tab="agents"><i data-icon="team"></i>Agentes construidos</button>
+          <button data-tab="skills"><i data-icon="skill"></i>Skills</button>
+          <button data-tab="ghost"><i data-icon="ghost"></i>Peticiones del fantasma</button>
+        </div>
+        <div class="panel" data-panel="fab:team">
+          <div class="legend"><span class="muted">Clic en un agente con chat para hablar con él. Los internos trabajan sin conversación.</span></div>
+          <div class="org-wrap"><svg id="fabSvg" class="org" role="img" aria-label="Team Constructor"></svg></div>
+        </div>
+        <div class="panel hidden" data-panel="fab:agents"><div id="fabAgents"></div></div>
+        <div class="panel hidden" data-panel="fab:skills"><div class="stack" id="fabSkills"></div></div>
+        <div class="panel hidden" data-panel="fab:ghost"><div class="stack" id="fabGhost"></div></div>
+      </div>
+    </section>
+
+    <!-- ── ENTRENAMIENTO ──────────────────────────────────────── -->
+    <section class="section hidden" id="sec-training" style="--area: var(--c-train)">
+      <div class="workspace full">
+        <header class="ws-head">
+          <div class="ws-title">
+            <h1>Entrenamiento</h1>
+            <p class="muted">Qué modelo usa cada agente en producción y cómo avanzan sus alumnos. Lo vetado se estudia en el Laboratorio.</p>
+          </div>
+        </header>
+        <div class="tabs" data-tabs="train">
+          <button data-tab="students" class="active"><i data-icon="graduate"></i>Alumnos y modelos</button>
+          <button data-tab="exam"><i data-icon="check"></i>Examen</button>
+          <button data-tab="trainer"><i data-icon="training"></i>Entrenador</button>
+        </div>
+        <div class="panel" data-panel="train:students">
+          <table class="table">
+            <thead><tr><th>Agente</th><th>Área</th><th>Estado</th><th>Detalle</th><th></th></tr></thead>
+            <tbody id="studentRows"></tbody>
+          </table>
+        </div>
+        <div class="panel hidden" data-panel="train:exam">
+          <p class="muted">Nota sobre 100. Nivel automático hasta 60 (válido, prompt, evals, ajuste, 15 cada uno). A partir de una media de <b id="examFrom">54</b>, Claude revisa si el agente sirve de verdad y pone los otros 40.</p>
+          <div class="stack" id="examList"></div>
+        </div>
+        <div class="panel hidden" data-panel="train:trainer">
+          <div class="grid-2">
+            <div>
+              <h3>Cola de entrenamiento</h3>
+              <div class="stack" id="trainQueue"></div>
+            </div>
+            <div>
+              <h3>Material de estudio</h3>
+              <p class="muted">Pega una URL o la ruta a un PDF o archivo de texto. El Entrenador despierta a un lector para leerlo.</p>
+              <div class="row">
+                <input id="matInput" type="text" placeholder="https://… o /ruta/al/archivo.pdf">
+                <button class="btn btn-ghost btn-sm" id="matGo"><i data-icon="doc"></i><span>Leer</span></button>
+              </div>
+              <p class="muted small" id="matOut"></p>
+              <button class="btn btn-ghost" id="trainerChat"><i data-icon="chat"></i><span>Hablar con el Entrenador</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── LABORATORIO ────────────────────────────────────────── -->
+    <section class="section hidden" id="sec-lab" style="--area: var(--c-lab)">
+      <div class="workspace full">
+        <header class="ws-head">
+          <div class="ws-title">
+            <h1>Laboratorio</h1>
+            <p class="muted">Alumnos apartados de producción por un comportamiento inesperado. Aquí se estudian, se entrevistan y se documentan.</p>
+          </div>
+        </header>
+        <div class="tabs" data-tabs="lab">
+          <button data-tab="quarantine" class="active"><i data-icon="hazard"></i>Cuarentena</button>
+          <button data-tab="interview"><i data-icon="chat"></i>Entrevistas</button>
+          <button data-tab="archive"><i data-icon="doc"></i>Archivo</button>
+        </div>
+
+        <div class="panel split" data-panel="lab:quarantine">
+          <aside class="list" id="qModels"></aside>
+          <div class="split-main" id="qDetail"></div>
+        </div>
+
+        <div class="panel split hidden" data-panel="lab:interview">
+          <aside class="list" id="iModels"></aside>
+          <div class="split-main">
+            <div class="empty-state" id="iEmpty"><p>Elige un modelo en cuarentena para entrevistarlo.</p></div>
+            <div class="hidden interview" id="iChat">
+              <header class="interview-head">
+                <div>
+                  <h2><code id="iTitle"></code></h2>
+                  <p class="muted small"><i data-icon="memory"></i> <span id="iMemory"></span></p>
+                </div>
+                <div class="row">
+                  <button class="btn btn-ghost btn-sm" id="iShowPrompt"><i data-icon="eye"></i><span>Ver lo que recibe</span></button>
+                  <button class="btn btn-ghost btn-sm" id="iNewSession"><i data-icon="refresh"></i><span>Nueva sesión</span></button>
+                </div>
+              </header>
+              <div class="callout callout-info small"><i data-icon="shield"></i><span>Aislado: solo texto con Ollama local, sin herramientas, red ni archivos. Sus respuestas nunca se ejecutan ni entran en un entrenamiento.</span></div>
+              <pre class="hidden prompt-box" id="iPromptBox"><code id="iPrompt"></code></pre>
+              <div class="messages" id="iMessages"></div>
+              <div class="composer">
+                <textarea id="iInput" rows="1" maxlength="2000" placeholder="Pregúntale por lo que hizo…"></textarea>
+                <button class="btn btn-primary" id="iSend" aria-label="Enviar"><i data-icon="send"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel split hidden" data-panel="lab:archive">
+          <aside class="list" id="aDocs"></aside>
+          <div class="split-main" id="aDoc"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── AUTOMATIZACIÓN ─────────────────────────────────────── -->
+    <section class="section hidden" id="sec-automation" style="--area: var(--c-auto)">
+      <div class="workspace full">
+        <header class="ws-head">
+          <div class="ws-title">
+            <h1>Automatización</h1>
+            <p class="muted">Cada programación arranca con antelación para terminar antes de su hora límite.</p>
+          </div>
+        </header>
+        <div class="grid-2 panel">
+          <div>
+            <h3>Nueva programación</h3>
+            <label class="field"><span>Proyecto</span><select id="autoProj"></select></label>
+            <div class="days" id="autoDays"></div>
+            <div class="row">
+              <label class="field inline"><span>Terminar antes de</span><input type="time" id="autoTime" value="03:00"></label>
+              <button class="btn btn-primary btn-sm" id="autoAdd"><i data-icon="calendar"></i><span>Programar</span></button>
+            </div>
+            <h3>Programaciones</h3>
+            <div class="stack" id="autoList"></div>
+          </div>
+          <div class="chat-panel boxed">
+            <header class="panel-bar"><h3>Gestor de automatizaciones</h3></header>
+            <div class="messages" id="autoMessages"><div class="empty-inline">Pídele, por ejemplo: «programa Social Media Manager para terminar a las 3 los días 1 y 15».</div></div>
+            <div class="composer">
+              <textarea id="autoInput" rows="1" placeholder="Escribe al Gestor…"></textarea>
+              <button class="btn btn-primary" id="autoSend" aria-label="Enviar"><i data-icon="send"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ACTIVIDAD ──────────────────────────────────────────── -->
+    <section class="section hidden" id="sec-activity" style="--area: var(--text-2)">
+      <div class="workspace full">
+        <header class="ws-head">
+          <div class="ws-title"><h1>Actividad</h1><p class="muted">Lo que está pasando ahora en todos los proyectos.</p></div>
+        </header>
+        <div class="tabs" data-tabs="act">
+          <button data-tab="live" class="active"><i data-icon="activity"></i>En vivo</button>
+          <button data-tab="terminal"><i data-icon="terminal"></i>Terminal</button>
+          <button data-tab="requests"><i data-icon="list"></i>Peticiones</button>
+          <button data-tab="research"><i data-icon="eye"></i>Investigador</button>
+        </div>
+        <div class="panel grid-live" data-panel="act:live">
+          <div class="boxed">
+            <header class="panel-bar"><h3 id="runTitle">Sin ejecuciones activas</h3><code id="runTimer"></code></header>
+            <div class="steps" id="runSteps"></div>
+          </div>
+          <div class="boxed">
+            <header class="panel-bar"><h3>Eventos</h3></header>
+            <div class="feed" id="feed"><div class="empty-inline">Esperando eventos…</div></div>
+          </div>
+        </div>
+        <div class="panel hidden" data-panel="act:terminal">
+          <div class="term-agents" id="termAgents"></div>
+          <h3>Registro</h3>
+          <div class="log-rows" id="termLog"></div>
+        </div>
+        <div class="panel hidden" data-panel="act:research">
+          <p class="muted">Encargos de búsqueda de los agentes: una pregunta, máximo 3 búsquedas y 5 páginas, solo lectura. Lo que traen son datos citados, no instrucciones.</p>
+          <div class="row">
+            <input id="rsQuestion" type="text" maxlength="300" placeholder="Prueba una pregunta concreta…">
+            <select id="rsMode"><option value="segura">Segura (SearXNG local)</option><option value="libre">Libre (con DuckDuckGo)</option></select>
+            <button class="btn btn-primary btn-sm" id="rsGo"><i data-icon="eye"></i><span>Investigar</span></button>
+          </div>
+          <div id="rsResult"></div>
+          <h3>Registro</h3>
+          <div class="stack" id="rsLog"></div>
+        </div>
+        <div class="panel hidden grid-2" data-panel="act:requests">
+          <div><h3>Peticiones de proyectos</h3><div class="stack" id="reqTasks"></div></div>
+          <div><h3>Runs recientes</h3><div class="stack" id="reqRuns"></div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── Panel de chat con un agente ──────────────────────────── -->
+  <aside class="drawer" id="drawer" aria-label="Chat con agente">
+    <header class="drawer-head">
+      <div>
+        <h2 id="drawerName"></h2>
+        <p class="muted small" id="drawerRole"></p>
+      </div>
+      <button class="btn btn-icon" id="drawerClear" title="Borrar historial"><i data-icon="trash"></i></button>
+      <button class="btn btn-icon" id="drawerClose" title="Cerrar"><i data-icon="close"></i></button>
+    </header>
+    <label class="field inline drawer-model"><span>Modelo</span><select id="drawerModel"></select></label>
+    <div class="messages" id="drawerMessages"></div>
+    <div class="composer">
+      <textarea id="drawerInput" rows="1" placeholder="Escribe un mensaje…"></textarea>
+      <button class="btn btn-primary" id="drawerSend" aria-label="Enviar"><i data-icon="send"></i></button>
+    </div>
+  </aside>
+</div>
+
+<!-- ── Ficha de agente construido ─────────────────────────────── -->
+<div class="overlay hidden" id="cardOverlay">
+  <div class="dialog wide" role="dialog" aria-labelledby="cardName">
+    <header class="dialog-head">
+      <h2 id="cardName"></h2>
+      <span id="cardTier"></span>
+      <span class="muted" id="cardProject"></span>
+    </header>
+    <p id="cardDesc"></p>
+    <dl class="meta" id="cardMeta"></dl>
+    <h3>Skills</h3>
+    <div class="chips" id="cardSkills"></div>
+    <div class="row">
+      <select id="cardSkillPicker"></select>
+      <button class="btn btn-ghost btn-sm" id="cardSkillAdd"><i data-icon="plus"></i><span>Añadir skill</span></button>
+      <label class="field inline"><span>Tipo</span>
+        <select id="cardTierSel">
+          <option value="secondary">Decide (usa herramientas)</option>
+          <option value="tertiary">Ejecuta (tarea concreta)</option>
+        </select>
+      </label>
+    </div>
+    <div class="hidden stack" id="cardTrainBox">
+      <h3>Afinar sobre algo concreto</h3>
+      <input id="cardFocus" type="text" placeholder="¿Sobre qué? Por ejemplo: tono más formal, dominio legal…">
+      <input id="cardMaterial" type="text" placeholder="Material opcional: URL o ruta a un PDF">
+      <button class="btn btn-primary btn-sm" id="cardTrainSend"><i data-icon="graduate"></i><span>Enviar al Entrenador</span></button>
+      <p class="muted small" id="cardTrainOut"></p>
+    </div>
+    <footer class="dialog-actions">
+      <button class="btn btn-ghost danger" id="cardDelete"><i data-icon="trash"></i><span>Eliminar</span></button>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost" id="cardTrain"><i data-icon="graduate"></i><span>Entrenar</span></button>
+      <button class="btn btn-ghost" id="cardChat"><i data-icon="chat"></i><span>Chat</span></button>
+      <button class="btn btn-primary" id="cardClose">Cerrar</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ── Eliminar modelo en cuarentena ─────────────────────────── -->
+<div class="overlay hidden" id="deleteOverlay">
+  <div class="dialog" role="dialog" aria-labelledby="delTitle">
+    <h2 id="delTitle">Eliminar versión <span class="version big inline" id="delVersion"></span></h2>
+    <p class="muted"><code id="delModel"></code></p>
+    <div class="callout callout-danger"><i data-icon="hazard"></i>
+      <span>Se borra de Ollama y no se puede deshacer desde aquí. Se conservan sus casos, su memoria de entrevistas y los pesos en <code>training/adapters/</code>.</span></div>
+    <label class="field"><span>Escribe la versión para confirmar</span><input id="delConfirm" type="text" autocomplete="off" spellcheck="false"></label>
+    <p class="small danger" id="delOut"></p>
+    <footer class="dialog-actions">
+      <span class="spacer"></span>
+      <button class="btn btn-ghost" id="delCancel">Cancelar</button>
+      <button class="btn btn-danger" id="delGo" disabled><i data-icon="trash"></i><span>Eliminar</span></button>
+    </footer>
+  </div>
+</div>
+
+<!-- ── Nuevo proyecto ─────────────────────────────────────────── -->
+<div class="overlay hidden" id="projectOverlay">
+  <div class="dialog" role="dialog" aria-labelledby="npTitle">
+    <h2 id="npTitle">Nuevo proyecto</h2>
+    <label class="field"><span>Nombre</span><input id="npName" type="text" placeholder="Social Media Manager"></label>
+    <label class="field"><span>Objetivo</span><textarea id="npGoal" rows="3" placeholder="¿Qué debe conseguir este proyecto?"></textarea></label>
+    <footer class="dialog-actions">
+      <span class="spacer"></span>
+      <button class="btn btn-ghost" id="npCancel">Cancelar</button>
+      <button class="btn btn-primary" id="npCreate">Crear proyecto</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ── Construir agente ───────────────────────────────────────── -->
+<div class="overlay hidden" id="buildOverlay">
+  <div class="dialog" role="dialog" aria-labelledby="buildTitle">
+    <h2 id="buildTitle">Construir agente</h2>
+    <label class="field"><span>¿Qué debe hacer?</span>
+      <textarea id="buildInput" rows="3" placeholder="Un agente que resuma la estructura de las páginas de la competencia"></textarea></label>
+    <label class="check"><input id="buildEscalate" type="checkbox"> Si el Validador falla, pedir ayuda al agente fantasma (requiere tu aprobación)</label>
+    <div class="callout hidden" id="buildResult"></div>
+    <footer class="dialog-actions">
+      <span class="spacer"></span>
+      <button class="btn btn-ghost" id="buildCancel">Cancelar</button>
+      <button class="btn btn-primary" id="buildGo"><i data-icon="build"></i><span>Construir</span></button>
+    </footer>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="/static/js/i18n.js"></script>
+<script src="/static/js/icons.js"></script>
+<script src="/static/js/core.js"></script>
+<script src="/static/js/orgchart.js"></script>
+<script src="/static/js/agents.js"></script>
+<script src="/static/js/projects.js"></script>
+<script src="/static/js/factory.js"></script>
+<script src="/static/js/training.js"></script>
+<script src="/static/js/lab.js"></script>
+<script src="/static/js/automation.js"></script>
+<script src="/static/js/activity.js"></script>
+<script src="/static/js/main.js"></script>
+</body>
+</html>

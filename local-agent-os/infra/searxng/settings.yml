@@ -1,0 +1,10 @@
+# SearXNG local para el Investigador de Paradax. Solo escucha en 127.0.0.1.
+use_default_settings: true
+server:
+  secret_key: "REEMPLAZAR_EN_EL_ARRANQUE"
+  limiter: false
+  image_proxy: false
+search:
+  formats: [html, json]
+  safe_search: 1
+  autocomplete: ""

@@ -1,0 +1,39 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node (recorder)
+node_modules/
+
+# Local settings and secrets
+.env
+.env.*
+!.env.example
+!.env.media.example
+.claude/
+
+# Runtime data: runs, database, models, datasets, generated media
+local-agent-os/data/*
+!local-agent-os/data/skills/
+local-agent-os/runs/
+local-agent-os/artifacts/
+local-agent-os/training/fused/
+local-agent-os/training/adapters/
+local-agent-os/training/dataset*/
+local-agent-os/infra/searxng/data/
+media-manager/gifs/*
+media-manager/output/*
+media-manager/voiceovers/*
+media-manager/logs/*
+media-manager/music/*
+media-manager/published/
+!media-manager/*/.gitkeep
+!media-manager/music/README.md
+*.gguf
+*.safetensors
+*.sqlite3
+
+.DS_Store
+.codegraph/

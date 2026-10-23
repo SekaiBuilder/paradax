@@ -1,0 +1,1 @@
+{"i":"summarize-page","n":"Resumen de pagina","k":"c","d":"Resume la estructura y secciones de una pagina web.","t":["web","resumen","investigacion"],"o":["http_get"],"p":"Resume secciones y elementos clave. Devuelve solo JSON."}
