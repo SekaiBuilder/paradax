@@ -16,7 +16,7 @@ checks every result against hard rules and keeps a trace of each step. Everythin
 ![Runs locally](https://img.shields.io/badge/LLM-Ollama%2C%20100%25%20local-000000)
 ![UI](https://img.shields.io/badge/UI-English%20·%20Español-blueviolet)
 
-[How it works](#how-it-works) · [What it does](#what-it-does) · [Install](#install) · [Architecture](#architecture) · [Limits](#honest-limits) · [Contributing](#contributing)
+[How it works](#how-it-works) · [What it does](#what-it-does) · [Install](#install) · [Architecture](#architecture) · [Limits](#honest-limits) · [Contributing](#contributing) · [Español](#en-español)
 
 </div>
 
@@ -173,3 +173,16 @@ Details and how to report a problem: [SECURITY.md](SECURITY.md).
 
 Paradax is open source under the [Apache License 2.0](LICENSE). Issues and pull requests are welcome, especially new
 skills, new deterministic tools, translations and bug reports with a run log. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## En español
+
+**Paradax** es un sistema operativo local para agentes de IA pequeños que trabajan con contrato: cada agente declara qué lee,
+qué escribe, el formato de su salida y las herramientas que puede usar. Describes lo que quieres, Paradax arma un equipo de
+agentes, los ejecuta en orden, comprueba cada resultado con reglas duras y guarda la traza de cada paso. Todo corre en tu
+ordenador con Ollama, y con las ejecuciones verificadas entrena sus propios modelos especialistas.
+
+- **Instalar:** sigue los pasos de [Install](#install) (Python 3.11, Ollama y, para grabar GIFs, Node.js y ffmpeg).
+- **Idioma:** la interfaz cambia entre español e inglés desde la barra lateral, y los agentes responden en el idioma en que les escribas. Los prompts y los comentarios del código están en español.
+- **Abrir:** <http://127.0.0.1:8791> tras arrancar el servidor, o la app de escritorio en macOS.
+
+Las capturas y los detalles están arriba, en inglés. Las incidencias y sugerencias en español también son bienvenidas en [Issues](https://github.com/SekaiBuilder/paradax/issues).
